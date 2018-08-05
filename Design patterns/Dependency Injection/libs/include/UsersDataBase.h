@@ -8,5 +8,5 @@ class  UsersDataBase
   public:
     virtual ~UsersDataBase() = default;
 
-    virtual const User* findUser(std::string login) = 0;
+    virtual const User* findUser(std::string) = 0;
 };

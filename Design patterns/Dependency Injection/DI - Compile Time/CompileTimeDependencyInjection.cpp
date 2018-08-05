@@ -1,13 +1,17 @@
 #include <string>
+#include <gmock/gmock.h>
+
 #include "FileLogger.h"
 #include "User.h"
 #include "UsersFileDataBase.h"
+
+namespace {
 
 template <typename UsersDataBase, typename PolymorphicFileLogger>
 class Authorization
 {
   public:
-    Authorization(UsersDataBase& udb, PolymorphicFileLogger& logger) : users(udb), logger(logger) {}
+    Authorization(UsersDataBase &udb, PolymorphicFileLogger &logger) : users(udb), logger(logger) {}
 
     bool authorize(std::string login, std::string password)
     {
@@ -23,25 +27,25 @@ class Authorization
     }
 
   private:
-    UsersDataBase& users;
-    PolymorphicFileLogger& logger;
+    UsersDataBase &users;
+    PolymorphicFileLogger &logger;
 };
-
-#include <gmock/gmock.h>
 
 using namespace ::testing;
 
-class UsersDataBaseMock { // no inheritance, no baseclass
-    public:
-        MOCK_METHOD1(findUser, const User*(std::string));
+class UsersDataBaseMock
+{ // no inheritance, no baseclass
+  public:
+    MOCK_METHOD1(findUser, const User *(std::string));
 };
 
-class LoggerMock { // no inheritance, no baseclass
-    public:
-        MOCK_METHOD1(log, void(const std::string&));
+class LoggerMock
+{ // no inheritance, no baseclass
+  public:
+    MOCK_METHOD1(log, void(const std::string &));
 };
 
-TEST(AuthorizationTests, runtime_polymorhpyzm_with_type_erasure_correct_login)
+TEST(AuthorizationTests_compile_time, correct_login)
 {
     User user{"login", "password"};
     UsersDataBaseMock users;
@@ -53,16 +57,17 @@ TEST(AuthorizationTests, runtime_polymorhpyzm_with_type_erasure_correct_login)
     ASSERT_THAT(auth.authorize(user.login, user.password), true);
 }
 
-TEST(AuthorizationTests, runtime_polymorhpyzm_with_type_erasure_incorrect_login)
+TEST(AuthorizationTests_compile_time, incorrect_login)
 {
     User user{"login", "password"};
     UsersDataBaseMock users;
     LoggerMock logger;
     Authorization<UsersDataBaseMock, LoggerMock> auth(users, logger);
 
-    InSeguence _;
+    InSequence _;
     EXPECT_CALL(users, findUser(user.login)).WillOnce(Return(&user));
     EXPECT_CALL(logger, log("User " + user.login + " failed to log in"));
 
     ASSERT_THAT(auth.authorize(user.login, "bad password"), false);
+}
 }
