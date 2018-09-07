@@ -7,4 +7,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(libs)
 add_subdirectory("Design patterns")
+add_subdirectory(Basics)
 
